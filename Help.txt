@@ -1,0 +1,8 @@
+truffle compile
+truffle migrate
+truffle console
+var token = await VToken.deploy() or deployed
+token.functionCallHere()
+
+In below, the {} stuff takes data that we wanna pass into the function call
+token.buyToken({value: web3.utils.toWei('2', 'ether')});
