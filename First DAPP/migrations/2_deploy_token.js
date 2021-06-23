@@ -1,10 +1,17 @@
+require('web3');
+
 var VToken = artifacts.require("./VToken.sol");
 var Voting = artifacts.require("./Voting.sol");
+var Distribution = artifacts.require("./Distribution.sol");
 
-module.exports = function(deployer) {
-  deployer.deploy(VToken, "Test", "TST", 100000).then(
-    DeployedContract =>{
-      deployer.deploy(Voting, DeployedContract.address);
-    }
-  )
+module.exports = async function(deployer, network, accounts) {
+  await deployer.deploy(VToken, "Virtual Token", "VTKN", 1000000);
+  const token = await VToken.deployed();
+
+  await deployer.deploy(Voting, token.address);
+
+  await deployer.deploy(Distribution, 2, accounts[0], token.address);
+  const crowdsale = await Distribution.deployed();
+
+  token.transfer(crowdsale.address, await token.totalSupply());
 };

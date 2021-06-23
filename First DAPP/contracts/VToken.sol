@@ -3,41 +3,31 @@
 pragma solidity >=0.7.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract VToken is Ownable,ERC20 {
+contract VToken is ERC20 {
    
-    uint256 public _maxSupply;
+    uint256 immutable private _cap;
 
     constructor (
         string memory name_,
         string memory symbol_,
-        uint256 maxSupply_
+        uint256 cap_
     ) ERC20(name_, symbol_) {
-        _maxSupply = maxSupply_ * (10 ** uint256(decimals()));
+        require(cap_ > 0, "ERC20Capped: cap is 0");
+        _cap = cap_ * (10 ** uint256(decimals()));
+        _mint(msg.sender, cap_ * 10 ** uint256(decimals()));
+    }
+
+    /**
+     * @dev Returns the cap on the token's total supply.
+     */
+    function cap() public view virtual returns (uint256) {
+        return _cap;
     }
    
-    function buyToken() external payable {
-        _mint(msg.sender, msg.value * 1000); //what is msg.value represent?
-    }
-   
-    function getEthFromSale() public onlyOwner {
-        payable(owner()).transfer(address(this).balance);
-    }
-   
-    function killSale() public onlyOwner saleComplete {
-        selfdestruct(payable(owner()));
-    }
-   
-    function mintRewards(address to, uint rewards) public onlyOwner {
-        _mint(to, rewards);
-    }
-   
-    modifier saleComplete() {
-        require(_maxSupply == totalSupply(), "Sale not complete, function cannot be executed");
-        _;
-    }
-   
+    /*
+    * Only here for curiosity or possibly adding hooks
+    */
     function _beforeTokenTransfer(
         address from,
         address to,
